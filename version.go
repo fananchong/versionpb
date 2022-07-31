@@ -160,7 +160,7 @@ func maxVersion(a *semver.Version, b *semver.Version) *semver.Version {
 }
 
 func versionFromOptionsString(opts string) (*semver.Version, error) {
-	msgs := []string{"[version_msg]:", "[version_field]:", "[version_enum]:", "[version_enum_value]:"}
+	msgs := []string{"[versionpb.version_msg]:", "[versionpb.version_field]:", "[versionpb.version_enum]:", "[versionpb.version_enum_value]:"}
 	var end, index int
 	for _, msg := range msgs {
 		index = strings.Index(opts, msg)
