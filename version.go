@@ -7,9 +7,36 @@ import (
 	"github.com/coreos/go-semver/semver"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+type VersionAnnotation struct {
+	fullName protoreflect.FullName
+	version  *semver.Version
+}
+
+// AllVersionByFiles 根据 proto 协议定义，获取协议版本
+func AllVersionByFiles(files *protoregistry.Files, externalPackages []string) (annotations []VersionAnnotation, err error) {
+	var fileAnnotations []VersionAnnotation
+	files.RangeFiles(func(file protoreflect.FileDescriptor) bool {
+		pkg := string(file.Package())
+		for _, externalPkg := range externalPackages {
+			if pkg == externalPkg {
+				return true
+			}
+		}
+		fileAnnotations, err = fileVersionAnnotations(file)
+		if err != nil {
+			return false
+		}
+		annotations = append(annotations, fileAnnotations...)
+		return true
+	})
+	return annotations, err
+}
+
+// MinimalVersion 根据消息，获取消息的版本
 func MinimalVersion(msg proto.Message) *semver.Version {
 	var maxVer *semver.Version
 	err := VisitMsg(msg, func(path protoreflect.FullName, ver *semver.Version) error {
@@ -20,6 +47,15 @@ func MinimalVersion(msg proto.Message) *semver.Version {
 		panic(err)
 	}
 	return maxVer
+}
+
+func fileVersionAnnotations(file protoreflect.FileDescriptor) (annotations []VersionAnnotation, err error) {
+	err = VisitFileDescriptor(file, func(path protoreflect.FullName, ver *semver.Version) error {
+		a := VersionAnnotation{fullName: path, version: ver}
+		annotations = append(annotations, a)
+		return nil
+	})
+	return annotations, err
 }
 
 type Visitor func(path protoreflect.FullName, ver *semver.Version) error
@@ -91,10 +127,7 @@ func visitMessage(m protoreflect.Message, visitor Visitor) error {
 		case protoreflect.EnumNumber:
 			err = visitEnumNumber(fd.Enum(), m, visitor)
 		}
-		if err != nil {
-			return false
-		}
-		return true
+		return err == nil
 	})
 	return err
 }
