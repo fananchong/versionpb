@@ -29,3 +29,8 @@ message Msg1 {
 
 
 完整例子参见： [https://github.com/fananchong/use_protobuf_define_multi_version_example](https://github.com/fananchong/use_protobuf_define_multi_version_example)
+
+
+## 参考
+
+本项目是参考了`Etcd 对 WAL 文件 Entry 做多版本识别的方法`
