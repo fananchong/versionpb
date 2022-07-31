@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -37,9 +36,9 @@ func AllVersionByFiles(files *protoregistry.Files, externalPackages []string) (a
 }
 
 // MinimalVersion 根据消息，获取消息的版本
-func MinimalVersion(msg proto.Message) *semver.Version {
+func MinimalVersion(m protoreflect.Message) *semver.Version {
 	var maxVer *semver.Version
-	err := VisitMsg(msg, func(path protoreflect.FullName, ver *semver.Version) error {
+	err := visitMessage(m, func(path protoreflect.FullName, ver *semver.Version) error {
 		maxVer = maxVersion(maxVer, ver)
 		return nil
 	})
@@ -59,11 +58,6 @@ func fileVersionAnnotations(file protoreflect.FileDescriptor) (annotations []Ver
 }
 
 type Visitor func(path protoreflect.FullName, ver *semver.Version) error
-
-// VisitMsg 根据消息，获取消息的版本
-func VisitMsg(msg proto.Message, visitor Visitor) error {
-	return visitMessage(msg.ProtoReflect(), visitor)
-}
 
 // VisitFileDescriptor 根据 proto 文件描述，获取消息的版本
 func VisitFileDescriptor(file protoreflect.FileDescriptor, visitor Visitor) error {
