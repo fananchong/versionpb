@@ -12,8 +12,8 @@ import (
 )
 
 type VersionAnnotation struct {
-	fullName protoreflect.FullName
-	version  *semver.Version
+	FullName protoreflect.FullName
+	Version  *semver.Version
 }
 
 // AllVersionByFiles 根据 proto 协议定义，获取协议版本
@@ -51,7 +51,7 @@ func MinimalVersion(msg proto.Message) *semver.Version {
 
 func fileVersionAnnotations(file protoreflect.FileDescriptor) (annotations []VersionAnnotation, err error) {
 	err = VisitFileDescriptor(file, func(path protoreflect.FullName, ver *semver.Version) error {
-		a := VersionAnnotation{fullName: path, version: ver}
+		a := VersionAnnotation{FullName: path, Version: ver}
 		annotations = append(annotations, a)
 		return nil
 	})
