@@ -4,6 +4,9 @@
 
 ## 例子
 
+
+**协议定义**
+
 ```protobuf
 syntax = "proto3";
 package examplepb;
@@ -28,8 +31,57 @@ message Msg1 {
 ```
 
 
+**使用**
+
+```go
+package main
+
+import (
+	"example1/examplepb"
+	"fmt"
+
+	"github.com/fananchong/versionpb"
+	"google.golang.org/protobuf/reflect/protoregistry"
+)
+
+func main() {
+	{
+		msg := &examplepb.Msg1{}
+		fmt.Printf("%v\n", versionpb.MinimalVersion(msg))
+	}
+
+	{
+		msg := &examplepb.Msg1{F6: examplepb.Msg1_E2}
+		fmt.Printf("%v\n", versionpb.MinimalVersion(msg))
+	}
+
+	{
+		msg := &examplepb.Msg1{F6: examplepb.Msg1_E3}
+		fmt.Printf("%v\n", versionpb.MinimalVersion(msg))
+	}
+
+	annotations, err := versionpb.AllVersionByFiles(protoregistry.GlobalFiles, []string{"google.protobuf"})
+	if err != nil {
+		panic(err)
+	}
+	for _, v := range annotations {
+		fmt.Printf("fullname:%v version:%v\n", v.FullName, v.Version)
+	}
+}
+```
+
+
 完整例子参见： [https://github.com/fananchong/use_protobuf_define_multi_version_example](https://github.com/fananchong/use_protobuf_define_multi_version_example)
 
+
+
+## API
+
+
+| api               | 说明                 |
+| :---------------- | :------------------- |
+| MinimalVersion    | 获取消息版本         |
+| AllVersionByFiles | 获取所有协议定义版本 |
 
 ## 参考
 
